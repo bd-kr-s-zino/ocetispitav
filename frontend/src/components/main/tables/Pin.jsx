@@ -13,8 +13,9 @@ import Select from '@mui/material/Select';
 import axios from "axios"
 import Input from "@mui/material/Input";
 
-function createData(id, equip_name, equip_diff, category, charact) {
-  return { id, equip_name, equip_diff, category, charact };
+function createData(id, pin_start, pin_end, equip, worker) {
+  console.log({id, pin_start, pin_end, equip, worker})
+  return { id, pin_start: pin_start.split("T")[0], pin_end: pin_end?.split("T")[0], equip, worker };
 }
 
 const CustomTableCell = ({ row, name, onChange }) => {
@@ -63,12 +64,12 @@ const CustomTableSelect = ({ row, name, onChange, values }) => {
   );
 };
 
-export default function Equipment({ role }) {
+export default function Pin({ role }) {
   const [rows, setRows] = React.useState();
   const [previous, setPrevious] = React.useState({});
   const [addedRow, setAddedRow] = React.useState(null);
-  const [categories, setCategories] = React.useState([]);
-  const [characts, setCharacts] = React.useState([]);
+  const [workers, setWorkers] = React.useState([]);
+  const [equips, setEquips] = React.useState([]);
 
   const onToggleEditMode = id => {
     setRows(state => {
@@ -90,24 +91,24 @@ export default function Equipment({ role }) {
       });
     });
     const row = rows.find((row) => row.id === id)
-    const data = await axios.put(`http://localhost:3001/equipment/${id}`, {
-      equip_name: row.equip_name,
-      equip_diff: row.equip_diff,
-      category: row.category,
-      charact: row.charact,
+    const data = await axios.put(`http://localhost:3001/pin/${id}`, {
+      pin_start: row.pin_start,
+      pin_end: row.pin_end,
+      equip: row.equip,
+      worker: row.worker,
     })
     console.log(data);
   };
   const onAddRow = async () => {
-    const { data } = await axios.post(`http://localhost:3001/equipment`, {
-      equip_name: addedRow.equip_name,
-      equip_diff: addedRow.equip_diff,
-      category: addedRow.category,
-      charact: addedRow.charact,
+    const { data } = await axios.post(`http://localhost:3001/pin`, {
+      pin_start: addedRow.pin_start,
+      pin_end: addedRow.pin_end,
+      equip: addedRow.equip,
+      worker: addedRow.worker,
     })
     console.log(data);
-    const { equip_id, equip_name, equip_diff, category, charact } = data
-    const row = createData(equip_id, equip_name, equip_diff, category, charact)
+    const { pin_id, pin_start, pin_end, equip, worker } = data
+    const row = createData(pin_id, pin_start, pin_end, equip, worker)
     console.log(row);
     setRows([...rows, row])
     setAddedRow(null);
@@ -136,7 +137,7 @@ export default function Equipment({ role }) {
   };
 
   const onDelete = async id => {
-    const data = await axios.delete(`http://localhost:3001/equipment/${id}`)
+    const data = await axios.delete(`http://localhost:3001/pin/${id}`)
     console.log(data);
     const newRows = rows.filter(row => row.id !== id);
     setRows(newRows);
@@ -144,13 +145,13 @@ export default function Equipment({ role }) {
 
   React.useEffect(() => {
     async function fetchData() {
-      const response = await axios.get("http://localhost:3001/equipment")
+      const response = await axios.get("http://localhost:3001/pin")
       const data = response.data[response.data.length - 1];
-      setCategories(response.data[0].map(category => category.category_name));
-      setCharacts(response.data[1].map(charact => charact.charact));
+      setEquips(response.data[0].map(category => category.equip_name));
+      setWorkers(response.data[1].map(charact => charact.worker_name));
       console.log(data);
-      const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact}) =>
-        createData(equip_id, equip_name, equip_diff, category, charact))
+      const rows = data.map(({ pin_id, pin_start, pin_end, equip, worker }) =>
+        createData(pin_id, pin_start, pin_end, equip, worker))
       setRows(rows)
     }
     fetchData()
@@ -163,10 +164,10 @@ export default function Equipment({ role }) {
         <TableHead>
           <TableRow>
             <TableCell>id</TableCell>
-            <TableCell>Назва </TableCell>
-            <TableCell>Різниця</TableCell>
-            <TableCell>Категорія</TableCell>
-            <TableCell>Характеристика</TableCell>
+            <TableCell>Дата початку </TableCell>
+            <TableCell>Дата кінця</TableCell>
+            <TableCell>Устаткування</TableCell>
+            <TableCell>Працівник</TableCell>
             {role !== "guest" && <TableCell onClick={() => setAddedRow({})}>Додати</TableCell>}
           </TableRow>
         </TableHead>
@@ -181,20 +182,18 @@ export default function Equipment({ role }) {
                   New
                 </TableCell>
                 <TableCell component="th" scope="row">
-                  <Input
-                    style={{ width: "100%" }}
-                    value={addedRow.equip_name}
-                    placeholder="Назва"
-                    name="equip_name"
+                  <input
+                    type="date"
+                    name="pin_start"
+                    value={addedRow.pin_start}
                     onChange={onChangeAddedRow}
                   />
                 </TableCell>
                 <TableCell component="th" scope="row">
-                  <Input
-                    style={{ width: "100%" }}
-                    value={addedRow.equip_diff}
-                    placeholder="Різниця"
-                    name="equip_diff"
+                  <input
+                    type="date"
+                    name="pin_end"
+                    value={addedRow.pin_end}
                     onChange={onChangeAddedRow}
                   />
                 </TableCell>
@@ -204,29 +203,29 @@ export default function Equipment({ role }) {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={addedRow.category}
+                      value={addedRow.equip}
                       name="category"
                       onChange={onChangeAddedRow}
                     >
                       {
-                        categories.map(value => <MenuItem value={value}>{value}</MenuItem>
+                        equips.map(value => <MenuItem value={value}>{value}</MenuItem>
                         )
                       }
                     </Select>
                   </FormControl>
-                </TableCell> 
+                </TableCell>
                 <TableCell component="th" scope="row">
                   <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label"></InputLabel>
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={addedRow.charact}
+                      value={addedRow.worker}
                       name="charact"
                       onChange={onChangeAddedRow}
                     >
                       {
-                        characts.map(value => <MenuItem value={value}>{value}</MenuItem>
+                        workers.map(value => <MenuItem value={value}>{value}</MenuItem>
                         )
                       }
                     </Select>
@@ -248,10 +247,24 @@ export default function Equipment({ role }) {
                 <TableCell component="th" scope="row">
                   {row.id}
                 </TableCell>
-                <CustomTableCell {...{ row, name: "equip_name", onChange }} />
-                <CustomTableCell {...{ row, name: "equip_diff", onChange }} />
-                <CustomTableSelect {...{ row, name: "category", onChange, values: categories }} />
-                <CustomTableSelect {...{ row, name: "charact", onChange, values: characts }} />
+                <TableCell component="th" scope="row">
+                  <input
+                    type="date"
+                    name="contract_date"
+                    value={row.pin_start}
+                    onChange={onChangeAddedRow}
+                  />
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  <input
+                    type="date"
+                    name="contract_date"
+                    value={row.pin_end}
+                    onChange={onChangeAddedRow}
+                  />
+                </TableCell>
+                <CustomTableSelect {...{ row, name: "equip", onChange, values: equips }} />
+                <CustomTableSelect {...{ row, name: "worker", onChange, values: workers }} />
                 {role !== "guest" && (row.isEditMode ?
                   <TableCell component="th" scope="row" onClick={() => onSaveRow(row.id)}
                   >
