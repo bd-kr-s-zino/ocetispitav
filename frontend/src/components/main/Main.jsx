@@ -19,6 +19,8 @@ import {
   } from "react-router-dom";
 import Workers from './tables/Workers';
 import Contracts from './tables/Contracts';
+import Equipment from './tables/Equipment';
+import Pin from './tables/Pin';
 
 const drawerWidth = 240;
 
@@ -53,7 +55,7 @@ export default function Main({role}) {
         <Toolbar />
         <Divider />
         <List>
-          {[["category", "Категорії"], ["workers", "Працівники"], ["contracts", "Контракти"]].map((items) => {
+          {[["category", "Категорії"], ["workers", "Працівники"], ["contracts", "Контракти"], ["equipment", "Устаткування"], ["pin", "Pin"]].map((items) => {
             return (
             <ListItem key={items[1]} disablePadding onClick={() => setCurrentTable(items[1])}>
               <Link to={items[0]}>
@@ -74,6 +76,8 @@ export default function Main({role}) {
           <Route path="/category" element={<CategoryTable role={role}/>}/>
           <Route path="/workers" element={<Workers role={role}/>}/>
           <Route path="/contracts" element={<Contracts role={role}/>}/>
+          <Route path="/equipment" element={<Equipment role={role}/>}/>
+          <Route path="/pin" element={<Pin role={role}/>}/>
         </Routes>
       </Box>
     </Box>
