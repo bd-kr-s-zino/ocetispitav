@@ -81,6 +81,13 @@ CREATE TABLE IF NOT EXISTS users (
  access VARCHAR(30) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS journal (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(100) NOT NULL,
+  user VARCHAR(50) NOT NULL,
+  DATE TIMESTAMP NOT NULL
+);
+
 INSERT INTO category (category_name) VALUES ('Фрезерні верстати');
 INSERT INTO category (category_name) VALUES ('Обробка пластику та гуми');
 INSERT INTO category (category_name) VALUES ('Ковально-пресове обладнання');
