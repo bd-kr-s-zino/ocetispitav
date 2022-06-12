@@ -9,6 +9,8 @@ router
   .put(categoryController.updateCategory)
   .delete(categoryController.deleteCategory)
 
+router.route('/search').get(categoryController.searchBy)
+
 router
   .route('/:id')
   .get(categoryController.getCategory)

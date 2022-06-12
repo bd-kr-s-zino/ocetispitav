@@ -3,31 +3,19 @@ const util = require('util')
 const connection = require('../config/database')
 
 const getAllContracts = async (req, res) => {
-  const sql = 'SELECT * FROM work_contract'
+  const sql =
+    'SELECT contract_id, contract_date, expire_date, responsibility, worker.worker_name AS worker FROM work_contract, worker WHERE work_contract.worker_id = worker.worker_id'
   const query = util.promisify(connection.query).bind(connection)
-  const findWorkers = async () => {
-    const workers = await query('SELECT worker_id, worker_name FROM worker')
-    return JSON.parse(JSON.stringify(workers))
-  }
-  const workers = await findWorkers()
+  const workers = JSON.parse(
+    JSON.stringify(await query('SELECT worker_id, worker_name FROM worker'))
+  )
   const response = [...workers]
   connection.query(sql, async (err, result) => {
-    if (err) return res.sendStatus(500)
-    const contracts = [
-      ...JSON.parse(JSON.stringify(result)).map((contract) => {
-        const worker = workers.find(
-          (worker) => worker?.worker_id === contract?.worker_id
-        )?.worker_name
-        const object = {
-          contract_id: contract.contract_id,
-          contract_date: contract.contract_date,
-          expire_date: contract.expire_date,
-          responsibility: contract.responsibility,
-          worker: worker,
-        }
-        return object
-      }),
-    ]
+    if (err) {
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    const contracts = JSON.parse(JSON.stringify(result))
     response.push(contracts)
     res.json(response)
   })
@@ -146,6 +134,10 @@ const deleteContract = (req, res) => {
     if (err) return res.sendStatus(500)
     res.sendStatus(200)
   })
+}
+
+const sortBy = (req, res) => {
+  const sql = `SELECT contract_id, contract_date, expire_date, responsibility, worker.worker_name AS worker FROM contract, worker WHERE contract.worker_id = worker.worker_id`
 }
 
 module.exports = {

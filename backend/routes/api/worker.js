@@ -7,6 +7,8 @@ router
   .get(workerController.getAllWorkers)
   .post(workerController.createNewWorker)
 
+router.route('/search').get(workerController.searchBy)
+
 router
   .route('/:id')
   .get(workerController.getWorker)

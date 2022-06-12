@@ -7,9 +7,10 @@ router
   .get(purchaseController.getAllPurchases)
   .post(purchaseController.createNewPurchase)
 
+router.route('/search').get(purchaseController.searchBy)
+
 router
   .route('/:id')
-  // .get(purchaseController.getPurchase)
   .put(purchaseController.updatePurchase)
   .delete(purchaseController.deletePurchase)
 

@@ -1,48 +1,31 @@
 const util = require('util')
 const connection = require('../config/database')
+const query = util.promisify(connection.query).bind(connection)
 
 const getAllPurchases = async (req, res) => {
-  const sql = 'SELECT * FROM purchase'
-  const query = util.promisify(connection.query).bind(connection)
-  const findEquip = async (equip_id) => {
-    const equipment = await query(`SELECT equip_id, equip_name FROM equipment`)
-    return JSON.parse(JSON.stringify(equipment))
-  }
-  const findSupplier = async (supplier_id) => {
-    const supplier = await query(
-      `SELECT supplier_id, supplier_name FROM supplier`
-    )
-    return JSON.parse(JSON.stringify(supplier))
-  }
+  const sql = `SELECT purchase_id, equip_name AS equip, cost, purchase_date, supplier_name AS supplier FROM purchase, equipment, supplier WHERE purchase.equip_id = equipment.equip_id AND purchase.supplier_id = supplier.supplier_id;`
 
+  const findEquip = async (equip_id) => {}
+
+  const equipment = JSON.parse(
+    JSON.stringify(
+      await query(`SELECT equip_name FROM equipment ORDER BY equip_id`)
+    )
+  )
+  const supplier = JSON.parse(
+    JSON.stringify(
+      await query(`SELECT supplier_name FROM supplier ORDER BY supplier_id`)
+    )
+  )
   connection.query(sql, async (err, result) => {
     if (err) return res.sendStatus(500)
     const purchases = JSON.parse(JSON.stringify(result))
-    const equip = await findEquip()
-    const supplier = await findSupplier()
-    const response = [
-      ...equip,
-      ...supplier,
-      ...purchases.map(async (purchase) => {
-        const object = {
-          purchase_id: purchase.purchase_id,
-          equip: equip.find((e) => e.equip_id === purchase.equip_id)
-            ?.equip_name,
-          cost: purchase.cost,
-          purchase_date: purchase.purchase_date,
-          supplier: supplier.find((s) => s.supplier_id === purchase.supplier_id)
-            ?.supplier_name,
-        }
-        return object
-      }),
-    ]
-    const array = await Promise.all(response.map((obj) => obj))
-    res.json(array)
+    const response = [[...equipment], [...supplier], [...purchases]]
+    res.json(response)
   })
 }
 
 const createNewPurchase = async (req, res) => {
-  const query = util.promisify(connection.query).bind(connection)
   const sql = 'INSERT INTO purchase VALUES(?, ?, ?, ?, ?)'
   const { equip, cost, purchase_date, supplier } = req.body
 
@@ -84,7 +67,6 @@ const createNewPurchase = async (req, res) => {
 }
 
 const updatePurchase = async (req, res) => {
-  const query = util.promisify(connection.query).bind(connection)
   const sql =
     'UPDATE purchase SET purchase_id = ?, equip_id = ?, cost = ?, purchase_date = ?, supplier_id = ? WHERE purchase_id = ?'
   const { equip, cost, purchase_date, supplier } = req.body
@@ -138,9 +120,38 @@ const deletePurchase = (req, res) => {
   })
 }
 
+const searchBy = (req, res) => {
+  const { after, before, equip, supplier, asc } = req.query
+  const byDate = after
+    ? before
+      ? `AND purchase_date BETWEEN '${after}' AND '${before}'`
+      : `AND purchase_date >= '${after}'`
+    : before
+    ? `AND purchase_date <= '${before}'`
+    : ''
+  const byEquip = equip ? `AND equip_name LIKE '%${equip}%'` : ''
+  const bySupplier = supplier ? `AND supplier_name LIKE '%${supplier}%'` : ''
+  const order =
+    asc == 'true' ? ' cost ASC' : asc == 'false' ? ' cost DESC' : ' purchase_id'
+  const sql = `SELECT purchase_id, equip_name AS equip, cost, purchase_date, supplier_name AS supplier 
+  FROM purchase, equipment, supplier 
+  WHERE purchase.equip_id = equipment.equip_id 
+  AND purchase.supplier_id = supplier.supplier_id
+  ${byDate}
+  ${byEquip}
+  ${bySupplier}
+  ORDER BY ${order};`
+
+  connection.query(sql, (err, result) => {
+    if (err) res.sendStatus(500)
+    res.json(JSON.parse(JSON.stringify(result)))
+  })
+}
+
 module.exports = {
   getAllPurchases,
   createNewPurchase,
   updatePurchase,
   deletePurchase,
+  searchBy,
 }

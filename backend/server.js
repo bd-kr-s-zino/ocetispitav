@@ -2,9 +2,6 @@ require('dotenv').config()
 
 const express = require('express')
 const app = express()
-const mysql = require('mysql')
-const { connect } = require('./config/database')
-const connection = require('./config/database')
 const cors = require('cors')
 
 const auth = require('./routes/auth')
@@ -18,8 +15,7 @@ const supplier = require('./routes/api/supplier')
 const equipment = require('./routes/api/equipment')
 const pin = require('./routes/api/pin')
 const users = require('./routes/api/users')
-const queries = require('./routes/api/queries')
-    // const journal = require('./routes/api/journal')
+// const journal = require('./routes/api/journal')
 
 const PORT = process.env.PORT || 3001
 
@@ -39,18 +35,17 @@ app.use('/supplier', supplier)
 app.use('/equipment', equipment)
 app.use('/pin', pin)
 app.use('/users', users)
-app.use('/queries', queries)
-    // app.use('/journal', journal)
+// app.use('/journal', journal)
 
 app.get('*', (req, res) => {
-    res.status(404)
-    if (req.accepts('json')) {
-        res.json({ error: '404 Not Found' })
-    } else {
-        res.type('txt').send('404 Not Found')
-    }
+  res.status(404)
+  if (req.accepts('json')) {
+    res.json({ error: '404 Not Found' })
+  } else {
+    res.type('txt').send('404 Not Found')
+  }
 })
 
 app.listen(PORT, () => {
-    console.log(`Server is listening on ${PORT}...`)
+  console.log(`Server is listening on ${PORT}...`)
 })

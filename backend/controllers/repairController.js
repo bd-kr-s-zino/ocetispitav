@@ -1,42 +1,27 @@
 const mysql = require('mysql')
 const util = require('util')
 const connection = require('../config/database')
+const query = util.promisify(connection.query).bind(connection)
 
 const getAllRepairs = async (req, res) => {
-  const sql = 'SELECT * FROM repairment;'
+  const sql = `SELECT repair_id, issue, fact_start, plan_end, fact_end, equip_name AS equip FROM repairment, equipment WHERE repairment.equip_id = equipment.equip_id`
   connection.query(sql, async (err, result) => {
     if (err) return res.sendStatus(500)
     const repairsDB = JSON.parse(JSON.stringify(result))
-    const repairs = []
+    const equipment = JSON.parse(
+      JSON.stringify(
+        await query(
+          'SELECT equip_id, equip_name FROM equipment ORDER BY equip_id'
+        )
+      )
+    )
     const response = []
-    const query = util.promisify(connection.query).bind(connection)
-    let findEquip = async () => {
-      const equip = (
-        await query('SELECT equip_id, equip_name FROM equipment')
-      ).sort((a, b) => (a.equip_id > b.equip_id ? 1 : -1))
-      return JSON.parse(JSON.stringify(equip))
-    }
-    const equipment = await findEquip()
-    response.push(equipment)
-    for (let i = 0; i < repairsDB.length; i++) {
-      repairs.push({
-        repair_id: repairsDB[i].repair_id,
-        issue: repairsDB[i].issue,
-        fact_start: repairsDB[i].fact_start,
-        plan_end: repairsDB[i].plan_end,
-        fact_end: repairsDB[i].fact_end,
-        equip: equipment.find(
-          (equip) => equip.equip_id === repairsDB[i].equip_id
-        ).equip_name,
-      })
-    }
-    response.push(repairs)
+    response.push(equipment, repairsDB)
     res.json(response)
   })
 }
 
 const createNewRepair = async (req, res) => {
-  const query = util.promisify(connection.query).bind(connection)
   const sql = 'INSERT INTO repairment VALUES(?, ?, ?, ?, ?, ?)'
   const { issue, fact_start, plan_end, fact_end, equip } = req.body
 
@@ -50,7 +35,7 @@ const createNewRepair = async (req, res) => {
     }
   }
 
-  let equipment = async (equip) => {
+  const equipment = async (equip) => {
     let equip_name = null
     const rows = await query('SELECT * FROM equipment')
     equip_name = rows.find((eq) => eq.equip_name === equip)
@@ -97,7 +82,6 @@ const getRepair = (req, res) => {
     if (!result.length) return res.sendStatus(404)
     console.log(result)
 
-    const query = util.promisify(connection.query).bind(connection)
     let findEquip = async (equip_id) => {
       const equip = await query(
         `SELECT equip_name FROM equipment WHERE equip_id = ${equip_id}`
@@ -122,7 +106,6 @@ const updateRepair = async (req, res) => {
     'UPDATE repairment SET repair_id = ?, issue = ?, fact_start = ?, plan_end = ?, fact_end = ?, equip_id = ? WHERE repair_id = ?'
   const { issue, fact_start, plan_end, fact_end, equip } = req.body
 
-  const query = util.promisify(connection.query).bind(connection)
   let result = async () => {
     let repairs = null
     try {
@@ -186,10 +169,31 @@ const deleteRepair = (req, res) => {
   })
 }
 
+const sortBy = (req, res) => {
+  const asc =
+    req.query.asc === undefined
+      ? 'ASC'
+      : req.query.asc == 'true'
+      ? 'ASC'
+      : 'DESC'
+  const equip =
+    req.query.equip === undefined
+      ? ' '
+      : ` AND equipment.equip_name LIKE '%${req.query.equip}%' `
+
+  const sql = `SELECT repair_id, issue, fact_start, plan_end, fact_end, equip_name AS equip FROM repairment, equipment WHERE repairment.equip_id = equipment.equip_id${equip}ORDER BY repair_id ${asc}`
+
+  connection.query(sql, (err, result) => {
+    if (err) return res.sendStatus(500)
+    res.json(JSON.parse(JSON.stringify(result)))
+  })
+}
+
 module.exports = {
   getAllRepairs,
   createNewRepair,
   getRepair,
   updateRepair,
   deleteRepair,
+  sortBy,
 }

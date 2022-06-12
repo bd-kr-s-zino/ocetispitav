@@ -1,50 +1,27 @@
 const mysql = require('mysql')
 const util = require('util')
 const connection = require('../config/database')
+const query = util.promisify(connection.query).bind(connection)
 
 const getAllEquipment = async (req, res) => {
-  const sql = 'SELECT * FROM equipment;'
-  const query = util.promisify(connection.query).bind(connection)
-  let findCategory = async () => {
-    const category = await query('SELECT * FROM category')
-    return JSON.parse(JSON.stringify(category))
-  }
-
-  let findCharact = async () => {
-    const charact = await query('SELECT * FROM characteristics')
-    return JSON.parse(JSON.stringify(charact))
-  }
-
-  const categories = await findCategory()
-  const characts = await findCharact()
-
+  const sql =
+    'SELECT equip_id, equip_name, equip_diff, category_name AS category, charact FROM equipment, category, characteristics WHERE equipment.category_id = category.category_id AND equipment.charact_id = characteristics.charact_id ORDER BY equip_id;'
+  const categories = JSON.parse(
+    JSON.stringify(await query('SELECT category_name FROM category'))
+  )
+  const characts = JSON.parse(
+    JSON.stringify(await query('SELECT charact FROM characteristics'))
+  )
   connection.query(sql, async (err, result) => {
     if (err) return res.sendStatus(500)
     const equipment = JSON.parse(JSON.stringify(result))
 
-    const response = [
-      [...categories],
-      [...characts],
-      equipment.map((equip) => {
-        return {
-          equip_id: equip.equip_id,
-          equip_name: equip.equip_name,
-          equip_diff: equip.equip_diff,
-          category: categories.find(
-            (category) => category.category_id === equip.category_id
-          )?.category_name,
-          charact: characts.find(
-            (charact) => charact.charact_id === equip.charact_id
-          )?.charact,
-        }
-      }),
-    ]
+    const response = [[...categories], [...characts], [...equipment]]
     res.json(response)
   })
 }
 
 const createNewEquipment = async (req, res) => {
-  const query = util.promisify(connection.query).bind(connection)
   const sql = 'INSERT INTO equipment VALUES(?, ?, ?, ?, ?)'
   const { equip_name, equip_diff, category, charact } = req.body
   let result = async () => {
@@ -121,7 +98,6 @@ const getEquipment = (req, res) => {
 const updateEquipment = async (req, res) => {
   const sql =
     'UPDATE equipment SET equip_id = ?, equip_name = ?, equip_diff = ?, category_id = ?, charact_id = ? WHERE equip_id = ?'
-  const query = util.promisify(connection.query).bind(connection)
   const { equip_name, equip_diff, category, charact } = req.body
 
   let findCategory = async (category_name) => {
@@ -185,10 +161,51 @@ const deleteEquipment = (req, res) => {
   })
 }
 
+const searchBy = (req, res) => {
+  const { after, before, name, category, asc } = req.query
+  const byName = name ? `AND equip_name LIKE '%${name}%'` : ''
+  const byDate = after
+    ? before
+      ? `JOIN (
+    SELECT * FROM purchase WHERE purchase_date BETWEEN '${after}' AND '${before}') AS purchases
+    ON purchases.equip_id = equipment.equip_id`
+      : `JOIN (
+      SELECT * FROM purchase WHERE purchase_date >= '${after}') AS purchases
+      ON purchases.equip_id = equipment.equip_id`
+    : before
+    ? `JOIN (
+        SELECT * FROM purchase WHERE purchase_date <= '${before}') AS purchases
+        ON purchases.equip_id = equipment.equip_id`
+    : ' '
+
+  const byCategory = category ? `AND category_name = '${category}'` : ''
+  const order =
+    asc == undefined || asc == 'true'
+      ? ' equip_name ASC'
+      : asc == 'false'
+      ? ' equip_name DESC'
+      : ' equipment.equip_id'
+  const sql = `
+  SELECT equipment.equip_id, equip_name, equip_diff, category_name AS category, charact
+  FROM category, characteristics, equipment
+  ${byDate}
+  WHERE equipment.category_id = category.category_id
+  AND equipment.charact_id = characteristics.charact_id
+  ${byCategory}
+  ${byName}
+  ORDER BY ${order};
+  `
+
+  connection.query(sql, (err, result) => {
+    res.json(JSON.parse(JSON.stringify(result)))
+  })
+}
+
 module.exports = {
   getAllEquipment,
   createNewEquipment,
   getEquipment,
   updateEquipment,
   deleteEquipment,
+  searchBy,
 }
