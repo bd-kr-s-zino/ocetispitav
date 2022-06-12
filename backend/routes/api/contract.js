@@ -7,6 +7,8 @@ router
   .get(contractController.getAllContracts)
   .post(contractController.createNewContract)
 
+router.route('/search').get(contractController.searchBy)
+
 router
   .route('/:id')
   .get(contractController.getContract)

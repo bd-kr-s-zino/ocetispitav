@@ -136,8 +136,23 @@ const deleteContract = (req, res) => {
   })
 }
 
-const sortBy = (req, res) => {
-  const sql = `SELECT contract_id, contract_date, expire_date, responsibility, worker.worker_name AS worker FROM contract, worker WHERE contract.worker_id = worker.worker_id`
+const searchBy = (req, res) => {
+  const { worker, asc } = req.query
+  const byWorker = worker ? `AND worker_name LIKE '%${worker}%'` : ''
+  const order =
+    asc == 'true'
+      ? ' worker_name ASC'
+      : asc == 'false'
+      ? ' worker_name DESC'
+      : ' contract_id'
+  const sql = `SELECT contract_id, contract_date, expire_date, responsibility, worker.worker_name AS worker 
+  FROM work_contract, worker 
+  WHERE work_contract.worker_id = worker.worker_id ${byWorker} 
+  ORDER BY ${order}`
+  connection.query(sql, (err, result) => {
+    if (err) res.sendStatus(500)
+    res.json(JSON.parse(JSON.stringify(result)))
+  })
 }
 
 module.exports = {
@@ -146,4 +161,5 @@ module.exports = {
   getContract,
   updateContract,
   deleteContract,
+  searchBy,
 }
