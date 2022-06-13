@@ -20,6 +20,11 @@ export default function SignIn({setRole}) {
       user: formData.get('email'),
       pwd: formData.get('password'),
     });
+    axios.defaults.headers.common['user'] = formData.get('email')
+    axios.interceptors.request.use(function (config) {
+      config.headers.user = formData.get('email');
+      return config;
+    });
     setRole(response.data.role)
   };
 

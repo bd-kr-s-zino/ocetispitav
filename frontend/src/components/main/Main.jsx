@@ -20,7 +20,10 @@ import {
 import Workers from './tables/Workers';
 import Contracts from './tables/Contracts';
 import Equipment from './tables/Equipment';
+import Supliers from './tables/Supliers';
 import Pin from './tables/Pin';
+import Charact from './tables/Charact';
+import Logs from './tables/Logs';
 
 const drawerWidth = 240;
 
@@ -55,7 +58,15 @@ export default function Main({role}) {
         <Toolbar />
         <Divider />
         <List>
-          {[["category", "Категорії"], ["workers", "Працівники"], ["contracts", "Контракти"], ["equipment", "Устаткування"], ["pin", "Pin"]].map((items) => {
+          {[["category", "Категорії"], 
+          ["workers", "Працівники"], 
+          ["contracts", "Контракти"], 
+          ["equipment", "Устаткування"],
+           ["pin", "Pin"],
+           ["supliers", "Поставники"],
+           ["characteristics", "Характеристики"],
+           ["logs", "Логи"]
+          ].map((items) => {
             return (
             <ListItem key={items[1]} disablePadding onClick={() => setCurrentTable(items[1])}>
               <Link to={items[0]}>
@@ -77,7 +88,10 @@ export default function Main({role}) {
           <Route path="/workers" element={<Workers role={role}/>}/>
           <Route path="/contracts" element={<Contracts role={role}/>}/>
           <Route path="/equipment" element={<Equipment role={role}/>}/>
+          <Route path="/supliers" element={<Supliers role={role}/>}/>
           <Route path="/pin" element={<Pin role={role}/>}/>
+          <Route path="/characteristics" element={<Charact role={role}/>}/>
+          <Route path="/logs" element={<Logs role={role}/>}/>
         </Routes>
       </Box>
     </Box>
