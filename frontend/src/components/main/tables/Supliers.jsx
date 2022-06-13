@@ -9,8 +9,8 @@ import Paper from '@mui/material/Paper';
 import axios from "axios"
 import Input from "@mui/material/Input";
 
-function createData(category_id, category_name) {
-  return {category_id, category_name};
+function createData(id, name, pn, email) {
+  return { id, name, pn, email };
 }
 
 const CustomTableCell = ({ row, name, onChange }) => {
@@ -31,7 +31,7 @@ const CustomTableCell = ({ row, name, onChange }) => {
   );
 };
 
-export default function Charact() {
+export default function Supliers() {
   const [rows, setRows] = React.useState();
   const [previous, setPrevious] = React.useState({});
   const [addedRow, setAddedRow] = React.useState(null);
@@ -39,38 +39,39 @@ export default function Charact() {
   const onToggleEditMode = id => {
     setRows(state => {
       return rows.map(row => {
-        if (row.category_id === id) {
+        if (row.id === id) {
           return { ...row, isEditMode: !row.isEditMode };
         }
         return row;
       });
     });
-    console.log(rows);
   };
-
   const onSaveRow = async id => {
     setRows(state => {
       return rows.map(row => {
-        if (row.category_id === id) {
+        if (row.id === id) {
           return { ...row, isEditMode: !row.isEditMode };
         }
         return row;
       });
     });
-    const row = rows.find((row) => row.category_id === id)
-    const data = await axios.put(`http://localhost:3001/category/${id}`, {
-      category_name: row.category_name,
+    const row = rows.find((row) => row.id === id)
+    const data = await axios.put(`http://localhost:3001/supplier/${id}`, {
+      supplier_name: row.name,
+      supplier_pn: row.pn,
+      email: row.email,
     })
     console.log(data);
   };
   const onAddRow = async () => {
-    console.log(addedRow);
-    const {data} = await axios.post(`http://localhost:3001/category`, {
-      category_name: addedRow.category_name,
+    const {data} = await axios.post(`http://localhost:3001/supplier`, {
+      supplier_name: addedRow.name,
+      supplier_pn: addedRow.pn,
+      email: addedRow.email,
     })
     console.log(data);
-    const { category_id, category_name} = data
-    const row = createData( category_id, category_name)
+    const { supplier_id, supplier_name, supplier_pn, email } = data
+    const row = createData(supplier_id, supplier_name, supplier_pn, email)
     console.log(row);
     setRows([...rows, row])
     setAddedRow(null);
@@ -88,9 +89,9 @@ export default function Charact() {
     }
     const value = e.target.value;
     const name = e.target.name;
-    const { category_id } = row;
+    const { id } = row;
     const newRows = rows.map(row => {
-      if (row.category_id === category_id) {
+      if (row.id === id) {
         return { ...row, [name]: value };
       }
       return row;
@@ -99,18 +100,18 @@ export default function Charact() {
   };
 
   const onDelete = async id => {
-    const data = await axios.delete(`http://localhost:3001/category/${id}`)
+    const data = await axios.delete(`http://localhost:3001/supplier/${id}`)
     console.log(data);
-    const newRows = rows.filter(row => row.category_id !== id);
+    const newRows = rows.filter(row => row.id !== id);
     setRows(newRows);
   };
 
   React.useEffect(() => {
     async function fetchData() {
-      const { data } = await axios.get("http://localhost:3001/category")
+      const { data } = await axios.get("http://localhost:3001/supplier")
       console.log(data);
-      const rows = data.map(({category_id, category_name}) =>
-        createData(category_id, category_name))
+      const rows = data.map(({ supplier_id, supplier_name, supplier_pn, email }) =>
+        createData(supplier_id, supplier_name, supplier_pn, email))
       setRows(rows)
     }
     fetchData()
@@ -122,7 +123,9 @@ export default function Charact() {
         <TableHead>
           <TableRow>
             <TableCell>id</TableCell>
-            <TableCell>Характеристика</TableCell>
+            <TableCell>Ім'я</TableCell>
+            <TableCell>Номер телефону </TableCell>
+            <TableCell>Email</TableCell>
             <TableCell onClick={() => setAddedRow({})}>Додати</TableCell>
           </TableRow>
         </TableHead>
@@ -130,24 +133,26 @@ export default function Charact() {
           {rows?.map((row) => {
             return <>
               <TableRow
-                key={row.category_id}
+                key={row.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
-                  {row.category_id}
+                  {row.id}
                 </TableCell>
-                <CustomTableCell {...{ row, name: "category_name", onChange }} />
+                <CustomTableCell {...{ row, name: "name", onChange }} />
+                <CustomTableCell {...{ row, name: "pn", onChange }} />
+                <CustomTableCell {...{ row, name: "email", onChange }} />
                 {row.isEditMode ?
-                  <TableCell component="th" scope="row" onClick={() => onSaveRow(row.category_id)}
+                  <TableCell component="th" scope="row" onClick={() => onSaveRow(row.id)}
                   >
                     збер
                   </TableCell> :
                   <>
-                    <TableCell component="th" scope="row" onClick={() => onToggleEditMode(row.category_id)}
+                    <TableCell component="th" scope="row" onClick={() => onToggleEditMode(row.id)}
                     >
                       ред
                     </TableCell>
-                    <TableCell component="th" scope="row" onClick={() => onDelete(row.category_id)}>
+                    <TableCell component="th" scope="row" onClick={() => onDelete(row.id)}>
                       вид
                     </TableCell>
                   </>
@@ -167,9 +172,27 @@ export default function Charact() {
                 <TableCell component="th" scope="row">
                   <Input
                     style={{ width: "100%" }}
-                    value={addedRow.category_name}
-                    placeholder="Характеристика"
-                    name="category_name"
+                    value={addedRow.name}
+                    placeholder="Ім'я"
+                    name="name"
+                    onChange={onChangeAddedRow}
+                  />
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  <Input
+                    style={{ width: "100%" }}
+                    value={addedRow.pn}
+                    placeholder="Номер телефону"
+                    name="pn"
+                    onChange={onChangeAddedRow}
+                  />
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  <Input
+                    style={{ width: "100%" }}
+                    value={addedRow.address}
+                    name="email"
+                    placeholder="Email"
                     onChange={onChangeAddedRow}
                   />
                 </TableCell>
@@ -183,5 +206,5 @@ export default function Charact() {
         </TableBody>
       </Table >
     </TableContainer >
-  ); 
+  );
 }

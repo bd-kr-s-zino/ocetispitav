@@ -14,7 +14,7 @@ import axios from "axios"
 import Input from "@mui/material/Input";
 
 function createData(id, pin_start, pin_end, equip, worker) {
-  console.log({id, pin_start, pin_end, equip, worker})
+  console.log({ id, pin_start, pin_end, equip, worker })
   return { id, pin_start: pin_start.split("T")[0], pin_end: pin_end?.split("T")[0], equip, worker };
 }
 
@@ -64,6 +64,7 @@ const CustomTableSelect = ({ row, name, onChange, values }) => {
   );
 };
 
+
 export default function Pin({ role }) {
   const [rows, setRows] = React.useState();
   const [previous, setPrevious] = React.useState({});
@@ -100,6 +101,14 @@ export default function Pin({ role }) {
     console.log(data);
   };
   const onAddRow = async () => {
+    console.log({
+      pin_start: addedRow.pin_start,
+      pin_end: addedRow.pin_end,
+      equip: addedRow.equip,
+      worker: addedRow.worker,
+    })
+    console.log(addedRow);
+
     const { data } = await axios.post(`http://localhost:3001/pin`, {
       pin_start: addedRow.pin_start,
       pin_end: addedRow.pin_end,
@@ -204,7 +213,7 @@ export default function Pin({ role }) {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       value={addedRow.equip}
-                      name="category"
+                      name="equip"
                       onChange={onChangeAddedRow}
                     >
                       {
@@ -221,7 +230,7 @@ export default function Pin({ role }) {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       value={addedRow.worker}
-                      name="charact"
+                      name="worker"
                       onChange={onChangeAddedRow}
                     >
                       {
