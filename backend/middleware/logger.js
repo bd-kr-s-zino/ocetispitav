@@ -16,7 +16,6 @@ const logEvents = async (user, message) => {
       console.log(err)
       return err
     }
-    console.log('1 row affected!')
   })
 }
 
