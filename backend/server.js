@@ -21,7 +21,9 @@ const journal = require('./routes/api/journal')
 const PORT = process.env.PORT || 3001
 
 app.use((req, res, next) => {
-  if (req.method != 'GET')
+  if (req.url == '/auth') logEvents(`${req.headers.user}`, `Вхід в систему`)
+  const methods = ['POST', 'PUT', 'DELETE']
+  if (methods.includes(req.method) && req.url != '/auth')
     logEvents(`${req.headers.user}`, `${req.method} ${req.url.slice(1)}`)
   next()
 })

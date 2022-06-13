@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS journal (
   id INT AUTO_INCREMENT PRIMARY KEY,
   action VARCHAR(100) NOT NULL,
   user VARCHAR(50) NOT NULL,
-  DATE TIMESTAMP NOT NULL
+  date TIMESTAMP NOT NULL
 );
 
 INSERT INTO category (category_name) VALUES ('Фрезерні верстати');

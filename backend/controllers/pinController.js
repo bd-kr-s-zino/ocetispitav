@@ -44,7 +44,7 @@ const getAllPins = async (req, res) => {
 const createNewPin = async (req, res) => {
   const query = util.promisify(connection.query).bind(connection)
   const sql = 'INSERT INTO pin VALUES(?, ?, ?, ?, ?)'
-  const { pin_start, pin_end, equip, worker_name } = req.body
+  const { pin_start, pin_end, equip, worker } = req.body
   let result = async () => {
     let pins = null
     try {
@@ -54,23 +54,23 @@ const createNewPin = async (req, res) => {
       return pins
     }
   }
-  let find_worker = async (worker_name) => {
+  const find_worker = async (worker_name) => {
     const rows = await query(
-      `SELECT worker_id FROM worker WHERE worker_name = ${worker_name}`
+      `SELECT worker_id FROM worker WHERE worker_name = '${worker_name}'`
     )
 
     return rows[0].worker_id
   }
   let find_equip = async (equip) => {
     const rows = await query(
-      `SELECT equip_id FROM equipment WHERE equip_name = ${equip}`
+      `SELECT equip_id FROM equipment WHERE equip_name = '${equip}'`
     )
 
     return rows[0].equip_id
   }
 
   const id = (await result()) + 1
-  const worker_id = await find_worker(worker_name)
+  const worker_id = await find_worker(worker)
   const equip_id = await find_equip(equip)
   const values = [id, pin_start, pin_end, equip_id, worker_id]
   console.log(values)
