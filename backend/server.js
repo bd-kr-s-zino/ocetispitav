@@ -22,7 +22,8 @@ const PORT = process.env.PORT || 3001
 
 app.use((req, res, next) => {
   if (req.url == '/auth') logEvents(`${req.headers.user}`, `Вхід в систему`)
-  if (req.method != 'GET' && req.url != '/auth')
+  const methods = ['POST', 'PUT', 'DELETE']
+  if (methods.includes(req.method) && req.url != '/auth')
     logEvents(`${req.headers.user}`, `${req.method} ${req.url.slice(1)}`)
   next()
 })

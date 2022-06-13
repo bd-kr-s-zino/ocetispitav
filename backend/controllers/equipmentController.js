@@ -11,11 +11,19 @@ const getAllEquipment = async (req, res) => {
   const characts = JSON.parse(
     JSON.stringify(await query('SELECT charact FROM characteristics'))
   )
+
+  const q = await query(
+    `SELECT COUNT(*) FROM purchase WHERE DATE_FORMAT(purchase_date, '%Y') = DATE_FORMAT(CURDATE() , '%Y')`
+  )
+  const count = {
+    title: `Скільки устаткування було куплено за цей рік: `,
+    result: `${q[0]['COUNT(*)']}`,
+  }
   connection.query(sql, async (err, result) => {
     if (err) return res.sendStatus(500)
     const equipment = JSON.parse(JSON.stringify(result))
 
-    const response = [[...categories], [...characts], [...equipment]]
+    const response = [[...categories], [...characts], [...equipment], [count]]
     res.json(response)
   })
 }
