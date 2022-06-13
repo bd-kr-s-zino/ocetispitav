@@ -9,6 +9,8 @@ router
   .put(repairController.updateRepair)
   .delete(repairController.deleteRepair)
 
+router.route('/search').get(repairController.sortBy)
+
 router
   .route('/:id')
   .get(repairController.getRepair)

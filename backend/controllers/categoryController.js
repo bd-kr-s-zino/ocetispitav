@@ -102,10 +102,29 @@ const deleteCategory = (req, res) => {
   })
 }
 
+const searchBy = (req, res) => {
+  const name = req.query.name
+    ? ` WHERE category_name LIKE '%${req.query.name}%'`
+    : ''
+  const order =
+    req.query.asc == 'true'
+      ? ' category_name ASC'
+      : req.query.asc == 'false'
+      ? ' category_name DESC'
+      : ' category_id'
+
+  const sql = `SELECT * FROM category${name} ORDER BY${order}`
+  connection.query(sql, (err, result) => {
+    if (err) res.sendStatus(500)
+    res.json(JSON.parse(JSON.stringify(result)))
+  })
+}
+
 module.exports = {
   getAllCategories,
   createNewCategory,
   getCategory,
   updateCategory,
   deleteCategory,
+  searchBy,
 }

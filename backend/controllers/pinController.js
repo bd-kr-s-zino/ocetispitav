@@ -44,8 +44,7 @@ const getAllPins = async (req, res) => {
 const createNewPin = async (req, res) => {
   const query = util.promisify(connection.query).bind(connection)
   const sql = 'INSERT INTO pin VALUES(?, ?, ?, ?, ?)'
-  const { pin_start, pin_end, equip, worker } = req.body
-
+  const { pin_start, pin_end, equip, worker_name } = req.body
   let result = async () => {
     let pins = null
     try {
@@ -55,36 +54,29 @@ const createNewPin = async (req, res) => {
       return pins
     }
   }
-
   let find_worker = async (worker_name) => {
-    let work = null
-    const rows = await query('SELECT * FROM worker')
-    work = rows.find((w) => w.worker_name === worker_name)
-    if (!work?.worker_id)
-      return res.status(400).json({ message: 'Please provide valid data!' })
+    const rows = await query(
+      `SELECT worker_id FROM worker WHERE worker_name = ${worker_name}`
+    )
 
-    return work.worker_id
+    return rows[0].worker_id
   }
-
   let find_equip = async (equip) => {
-    let equipment = null
-    const rows = await query('SELECT * FROM equipment')
-    equipment = rows.find((e) => e.equip_name === equip)
-    if (!equipment?.equip_id)
-      return res.status(400).json({ message: 'Please provide valid data!' })
+    const rows = await query(
+      `SELECT equip_id FROM equipment WHERE equip_name = ${equip}`
+    )
 
-    return equipment.equip_id
+    return rows[0].equip_id
   }
 
   const id = (await result()) + 1
-  const worker_id = await find_worker(worker)
+  const worker_id = await find_worker(worker_name)
   const equip_id = await find_equip(equip)
-
   const values = [id, pin_start, pin_end, equip_id, worker_id]
   console.log(values)
 
   if (!pin_start || !equip_id || !worker_id) {
-    return res.status(400).json({
+    return res.sendStatus(400).json({
       message: 'Request must contain pin_start, pin_end, equip, worker fields',
     })
   }

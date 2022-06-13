@@ -7,6 +7,8 @@ router
   .get(equipmentController.getAllEquipment)
   .post(equipmentController.createNewEquipment)
 
+router.route('/search').get(equipmentController.searchBy)
+
 router
   .route('/:id')
   .get(equipmentController.getEquipment)
