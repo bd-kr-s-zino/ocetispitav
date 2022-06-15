@@ -6,12 +6,14 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import axios from "axios"
 import Input from "@mui/material/Input";
+import { Checkbox } from '@mui/material';
 
 function createData(id, equip_name, equip_diff, category, charact) {
   return { id, equip_name, equip_diff, category, charact };
@@ -69,6 +71,9 @@ export default function Equipment({ role }) {
   const [addedRow, setAddedRow] = React.useState(null);
   const [categories, setCategories] = React.useState([]);
   const [characts, setCharacts] = React.useState([]);
+  const [name, setName] = React.useState("");
+  const [category, setCategory] = React.useState("");
+  const [asc, setAsc] = React.useState(false);
 
   const onToggleEditMode = id => {
     setRows(state => {
@@ -145,11 +150,11 @@ export default function Equipment({ role }) {
   React.useEffect(() => {
     async function fetchData() {
       const response = await axios.get("http://localhost:3001/equipment")
-      const data = response.data[response.data.length - 1];
+      const data = response.data[2];
       setCategories(response.data[0].map(category => category.category_name));
       setCharacts(response.data[1].map(charact => charact.charact));
       console.log(data);
-      const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact}) =>
+      const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact }) =>
         createData(equip_id, equip_name, equip_diff, category, charact))
       setRows(rows)
     }
@@ -161,6 +166,46 @@ export default function Equipment({ role }) {
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
+          <TableRow>
+            <TableCell>
+              <TableCell>
+                <Input
+                  style={{ width: "100%" }}
+                  value={name}
+                  placeholder="Імя"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </TableCell>
+            </TableCell>
+            <TableCell>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={category}
+                label="Категорії"
+                style={{ width: "200px" }}
+                onChange={e => setCategory(e.target.value)}
+              >
+                {
+                  categories?.map(value => <MenuItem value={value}>{value}</MenuItem>
+                  )
+                }
+              </Select>
+            </TableCell> 
+             <TableCell>
+             За зростанням<Checkbox checked={asc} onChange={e => setAsc(e.target.checked)}>За зростанням</Checkbox>
+            </TableCell>
+            <TableCell>
+              <Button onClick={async () => {
+                const namequery = name ? `name=${name}&` : ``
+                const equipQuery = category ? `category=${category}&` : ``
+                const { data } = await axios.get(`http://localhost:3001/equipment/search/?${namequery}${equipQuery}asc=${asc}`)
+                const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact }) =>
+                  createData(equip_id, equip_name, equip_diff, category, charact))
+                setRows(rows)
+              }}>Знайти</Button>
+            </TableCell>
+          </TableRow>
           <TableRow>
             <TableCell>id</TableCell>
             <TableCell>Назва </TableCell>
@@ -214,7 +259,7 @@ export default function Equipment({ role }) {
                       }
                     </Select>
                   </FormControl>
-                </TableCell> 
+                </TableCell>
                 <TableCell component="th" scope="row">
                   <FormControl fullWidth>
                     <InputLabel id="demo-simple-select-label"></InputLabel>
