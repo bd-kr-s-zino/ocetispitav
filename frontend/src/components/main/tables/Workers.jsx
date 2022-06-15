@@ -5,6 +5,10 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Paper from '@mui/material/Paper';
 import axios from "axios"
 import Input from "@mui/material/Input";
@@ -35,7 +39,11 @@ export default function Workers() {
   const [rows, setRows] = React.useState();
   const [previous, setPrevious] = React.useState({});
   const [addedRow, setAddedRow] = React.useState(null);
-
+  const [name, setName] = React.useState(null);
+  const [equips, setEquips] = React.useState(null);
+  const [equip, setEquip] = React.useState(null);
+  const [asc, setAsc] = React.useState(null);
+  console.log(rows)
   const onToggleEditMode = id => {
     setRows(state => {
       return rows.map(row => {
@@ -64,12 +72,12 @@ export default function Workers() {
     console.log(data);
   };
   const onAddRow = async () => {
-    const {data} = await axios.post(`http://localhost:3001/worker`, {
+    const { data } = await axios.post(`http://localhost:3001/worker`, {
       worker_name: addedRow.name,
       worker_pn: addedRow.pn,
       worker_address: addedRow.address,
     })
-    console.log(data);
+    console.log(equips);
     const { worker_id, worker_name, worker_pn, worker_address } = data
     const row = createData(worker_id, worker_name, worker_pn, worker_address)
     console.log(row);
@@ -109,8 +117,9 @@ export default function Workers() {
   React.useEffect(() => {
     async function fetchData() {
       const { data } = await axios.get("http://localhost:3001/worker")
+      setEquips(data[0].map(e => e.equip_name))
       console.log(data);
-      const rows = data.map(({ worker_id, worker_name, worker_pn, worker_address }) =>
+      const rows = data[1].map(({ worker_id, worker_name, worker_pn, worker_address }) =>
         createData(worker_id, worker_name, worker_pn, worker_address))
       setRows(rows)
     }
@@ -121,6 +130,42 @@ export default function Workers() {
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
+          <TableRow>
+            <TableCell>
+              <Input
+                style={{ width: "100%" }}
+                value={name}
+                placeholder="Імя"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </TableCell>
+            <TableCell>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={equip}
+                label="Обладнання"
+                onChange={e => setEquip(e.target.value)}
+              >
+                {
+                  equips?.map(value => <MenuItem value={value}>{value}</MenuItem>
+                  )
+                }
+              </Select> </TableCell>
+              <TableCell>
+              За зростанням<Checkbox checked={asc} onChange={e => setAsc(e.target.checked)}>За зростанням</Checkbox>
+            </TableCell>
+            <TableCell>
+              <Button onClick={async () => {
+                const namequery = name ? `name=${name}&` : ``
+                const equipQuery = equip ? `equip=${equip}&` : ``
+                const { data } = await axios.get(`http://localhost:3001/worker/search/?${namequery}${equipQuery}asc=${asc}`)
+                const rows = data.map(({ worker_id, worker_name, worker_pn, worker_address }) =>
+                  createData(worker_id, worker_name, worker_pn, worker_address))
+                setRows(rows)
+              }}>Знайти</Button>
+            </TableCell>
+          </TableRow>
           <TableRow>
             <TableCell>id</TableCell>
             <TableCell>Ім'я</TableCell>
