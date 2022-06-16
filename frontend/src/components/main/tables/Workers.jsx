@@ -43,7 +43,6 @@ export default function Workers() {
   const [equips, setEquips] = React.useState(null);
   const [equip, setEquip] = React.useState(null);
   const [asc, setAsc] = React.useState(null);
-  console.log(rows)
   const onToggleEditMode = id => {
     setRows(state => {
       return rows.map(row => {
@@ -77,10 +76,8 @@ export default function Workers() {
       worker_pn: addedRow.pn,
       worker_address: addedRow.address,
     })
-    console.log(equips);
     const { worker_id, worker_name, worker_pn, worker_address } = data
     const row = createData(worker_id, worker_name, worker_pn, worker_address)
-    console.log(row);
     setRows([...rows, row])
     setAddedRow(null);
   };

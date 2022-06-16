@@ -74,6 +74,9 @@ export default function Equipment({ role }) {
   const [name, setName] = React.useState("");
   const [category, setCategory] = React.useState("");
   const [asc, setAsc] = React.useState(false);
+  const [count, setCount] = React.useState(false);
+  const [before, setBefore] = React.useState("2040-01-01");
+  const [after, setAfter] = React.useState("0001-01-01");
 
   const onToggleEditMode = id => {
     setRows(state => {
@@ -110,6 +113,7 @@ export default function Equipment({ role }) {
       category: addedRow.category,
       charact: addedRow.charact,
     })
+
     console.log(data);
     const { equip_id, equip_name, equip_diff, category, charact } = data
     const row = createData(equip_id, equip_name, equip_diff, category, charact)
@@ -146,6 +150,13 @@ export default function Equipment({ role }) {
     const newRows = rows.filter(row => row.id !== id);
     setRows(newRows);
   };
+  React.useEffect(() => {
+    async function fetchData() {
+      const response = await axios.get("http://localhost:3001/equipment")
+      setCount(response.data[3][0].result)
+    }
+    fetchData()
+  }, [rows])
 
   React.useEffect(() => {
     async function fetchData() {
@@ -153,7 +164,7 @@ export default function Equipment({ role }) {
       const data = response.data[2];
       setCategories(response.data[0].map(category => category.category_name));
       setCharacts(response.data[1].map(charact => charact.charact));
-      console.log(data);
+      setCount(response.data[3][0].result)
       const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact }) =>
         createData(equip_id, equip_name, equip_diff, category, charact))
       setRows(rows)
@@ -161,21 +172,46 @@ export default function Equipment({ role }) {
     fetchData()
   }, [])
   console.log(rows);
-
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
             <TableCell>
-              <TableCell>
-                <Input
-                  style={{ width: "100%" }}
-                  value={name}
-                  placeholder="Імя"
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </TableCell>
+              <Button onClick={async () => {
+                const namequery = name ? `name=${name}&` : ``
+                const equipQuery = category ? `category=${category}&` : ``
+                const beforeQuery = before ? `before=${before}&` : ``
+                const afterQuery = after ? `after=${after}&` : ``
+                const { data } = await axios.get(`http://localhost:3001/equipment/search/?${namequery}${equipQuery}asc=${asc}${beforeQuery}${afterQuery}`)
+                const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact }) =>
+                  createData(equip_id, equip_name, equip_diff, category, charact))
+                setRows(rows)
+              }}>Знайти</Button>
+            </TableCell>
+            <TableCell>
+              <Input
+                style={{ width: "100%" }}
+                value={name}
+                placeholder="Імя"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </TableCell>
+            <TableCell>
+              До:
+              <input
+                type="date"
+                name="pin_end"
+                value={before}
+                onChange={e => setBefore(e.target.value)}
+              />
+            </TableCell> <TableCell>
+              Після: <input
+                type="date"
+                name="pin_end"
+                value={after}
+                onChange={e => setAfter(e.target.value)}
+              />
             </TableCell>
             <TableCell>
               <Select
@@ -191,19 +227,12 @@ export default function Equipment({ role }) {
                   )
                 }
               </Select>
-            </TableCell> 
-             <TableCell>
-             За зростанням<Checkbox checked={asc} onChange={e => setAsc(e.target.checked)}>За зростанням</Checkbox>
             </TableCell>
             <TableCell>
-              <Button onClick={async () => {
-                const namequery = name ? `name=${name}&` : ``
-                const equipQuery = category ? `category=${category}&` : ``
-                const { data } = await axios.get(`http://localhost:3001/equipment/search/?${namequery}${equipQuery}asc=${asc}`)
-                const rows = data.map(({ equip_id, equip_name, equip_diff, category, charact }) =>
-                  createData(equip_id, equip_name, equip_diff, category, charact))
-                setRows(rows)
-              }}>Знайти</Button>
+              За зростанням<Checkbox checked={asc} onChange={e => setAsc(e.target.checked)}>За зростанням</Checkbox>
+            </TableCell>
+            <TableCell>
+              Кількість устаткування купленного за цей рік: {count}
             </TableCell>
           </TableRow>
           <TableRow>

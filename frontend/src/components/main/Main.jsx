@@ -67,21 +67,22 @@ export default function Main({ role }) {
               ['characteristics', 'Характеристики'],
               ['logs', 'Логи'],
               ['users', 'Користувачі'],
-            ].map((items) => {
-              return (
-                <ListItem
-                  key={items[1]}
-                  disablePadding
-                  onClick={() => setCurrentTable(items[1])}
-                >
-                  <Link to={items[0]}>
-                    <ListItemButton>
-                      <ListItemText primary={items[1]} />
-                    </ListItemButton>
-                  </Link>
-                </ListItem>
-              )
-            })}
+            ].filter(arr => arr[0] !== 'users' || role === 'admin')
+              .map((items) => {
+                return (
+                  <ListItem
+                    key={items[1]}
+                    disablePadding
+                    onClick={() => setCurrentTable(items[1])}
+                  >
+                    <Link to={items[0]}>
+                      <ListItemButton>
+                        <ListItemText primary={items[1]} />
+                      </ListItemButton>
+                    </Link>
+                  </ListItem>
+                )
+              })}
           </List>
           <Divider />
         </Drawer>

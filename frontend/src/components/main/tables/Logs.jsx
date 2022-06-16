@@ -11,7 +11,7 @@ import axios from "axios"
 import Input from "@mui/material/Input";
 
 function createData(id, action, user, DATE) {
-  return { id, action, user: String(user), DATE: DATE.split("T")[0] };
+  return { id, action, user: String(user), DATE:  DATE.slice(0, -5) };
 }
 
 const CustomTableCell = ({ row, name, onChange }) => {
@@ -88,10 +88,9 @@ export default function Logs({ role }) {
                 </TableCell>
                 <TableCell component="th" scope="row">
                   <input
-                    type="date"
+                    type="datetime-local"
                     name="contract_date"
-                    value={row.DATE.split("T")[0]}
-                    onChange={(e) => onChange(e, row)}
+                    value={row.DATE}
                     disabled={true}
                   />
                 </TableCell>
