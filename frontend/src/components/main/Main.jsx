@@ -18,6 +18,7 @@ import Equipment from './tables/Equipment'
 import Supliers from './tables/Supliers'
 import Pin from './tables/Pin'
 import Charact from './tables/Charact'
+import Purchase from './tables/Purchasea'
 import Logs from './tables/Logs'
 import Users from './tables/Users'
 
@@ -66,6 +67,7 @@ export default function Main({ role }) {
               ['supliers', 'Поставники'],
               ['characteristics', 'Характеристики'],
               ['logs', 'Логи'],
+              ['purchase', 'Закупки'],
               ['users', 'Користувачі'],
             ].filter(arr => arr[0] !== 'users' || role === 'admin')
               .map((items) => {
@@ -97,6 +99,7 @@ export default function Main({ role }) {
             <Route path="/equipment" element={<Equipment role={role} />} />
             <Route path="/supliers" element={<Supliers role={role} />} />
             <Route path="/pin" element={<Pin role={role} />} />
+            <Route path="/purchase" element={<Purchase role={role} />} />
             <Route path="/characteristics" element={<Charact role={role} />} />
             <Route path="/logs" element={<Logs role={role} />} />
             <Route path="/users" element={<Users role={role} />} />
