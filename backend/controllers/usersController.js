@@ -27,6 +27,7 @@ const createNewUser = async (req, res) => {
   const values = [id, name, password, access]
 
   if (!id || !name || !password || !access) {
+    console.log(values)
     return res.status(400).json({
       message: 'Request must contain name, password, access fields',
     })

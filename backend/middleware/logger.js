@@ -3,6 +3,7 @@ const mysql = require('mysql')
 const connection = require('../config/database')
 
 const logEvents = async (user, message) => {
+  console.log(user)
   const date = new Date().toISOString().split('T')
   const timestamp = `${date[0]} ${date[1].split('.')[0]}`
   const object = {
