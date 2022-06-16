@@ -8,7 +8,10 @@ import TableRow from '@mui/material/TableRow'
 import Paper from '@mui/material/Paper'
 import axios from 'axios'
 import Input from '@mui/material/Input'
-
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 function createData(id, name, password, access) {
   return { id, name, password, access }
 }
@@ -30,7 +33,33 @@ const CustomTableCell = ({ row, name, onChange }) => {
     </TableCell>
   )
 }
-
+const CustomTableSelect = ({ row, name, onChange, values }) => {
+  const { isEditMode } = row;
+  return (
+    <TableCell align="left">
+      {isEditMode ? (
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-select-label"></InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={row[name]}
+            name={name}
+            label="Age"
+            onChange={e => onChange(e, row)}
+          >
+            {
+              values.map(value => <MenuItem value={value}>{value}</MenuItem>
+              )
+            }
+          </Select>
+        </FormControl>
+      ) : (
+        row[name]
+      )}
+    </TableCell>
+  );
+};
 export default function Users() {
   const [rows, setRows] = React.useState()
   const [previous, setPrevious] = React.useState({})
@@ -139,7 +168,7 @@ export default function Users() {
                   </TableCell>
                   <CustomTableCell {...{ row, name: 'name', onChange }} />
                   <CustomTableCell {...{ row, name: 'password', onChange }} />
-                  <CustomTableCell {...{ row, name: 'access', onChange }} />
+                  <CustomTableSelect {...{ row, name: 'access', onChange, values: ["admin", "worker"] }} />
                   {row.isEditMode ? (
                     <TableCell
                       component="th"
@@ -197,13 +226,21 @@ export default function Users() {
                 />
               </TableCell>
               <TableCell component="th" scope="row">
-                <Input
-                  style={{ width: '100%' }}
-                  value={addedRow.access}
-                  name="access"
-                  placeholder="Рівень доступу"
-                  onChange={onChangeAddedRow}
-                />
+                <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label"></InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={addedRow.access}
+                    name="access"
+                    onChange={onChangeAddedRow}
+                  >
+                    {
+                      ["admin", "worker"].map(value => <MenuItem value={value}>{value}</MenuItem>
+                      )
+                    }
+                  </Select>
+                </FormControl>
               </TableCell>
               <TableCell component="th" scope="row" onClick={onAddRow}>
                 збер
